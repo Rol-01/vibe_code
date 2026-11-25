@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusED — Student Academic Portal</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            }
+          },
+          boxShadow: {
+            'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+            'glow': '0 0 20px rgba(99, 102, 241, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar & subtle transitions */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+    .view-transition {
+      animation: fadeSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity" onclick="toggleSidebar(false)"></div>
+
+  <div class="min-h-screen flex flex-col lg:flex-row">
+    <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto transition-transform duration-300 ease-out flex flex-col justify-between">
+      <div>
+        <!-- Brand Header -->
+        <div class="h-18 px-6 py-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center text-white shadow-glow">
+              <i class="ph-bold ph-graduation-cap text-xl"></i>
+            </div>
+            <div>
+              <span class="font-display font-extrabold text-lg tracking-tight text-slate-900 dark:text-white block leading-none">Nexus<span class="text-brand-600 dark:text-brand-400">ED</span></span>
+              <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider mt-1 block">Student Portal</span>
+            </div>
+          </div>
+          <button onclick="toggleSidebar(false)" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close Sidebar">
+            <i class="ph ph-x text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Academic Term Pill -->
+        <div class="px-5 pt-5 pb-2">
+          <div class="px-3.5 py-2.5 rounded-xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900/60 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">Active Term</p>
+              <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5">1st Sem • AY 2026–2027</p>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></span>
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="px-4 py-4 space-y-1.5" aria-label="Main Navigation">
+          <button data-nav="dashboard" onclick="navigateTo('dashboard')" class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+            <i class="ph ph-squares-four text-xl"></i>
+            <span>Dashboard</span>
+          </button>
+          <button data-nav="schedule" onclick="navigateTo('schedule')" class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+            <i class="ph ph-calendar-blank text-xl"></i>
+            <span>Class Schedule</span>
+          </button>
+          <button data-nav="grades" onclick="navigateTo('grades')" class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+            <i class="ph ph-chart-bar text-xl"></i>
+            <span>Grades & GWA</span>
+          </button>
+          <button data-nav="announcements" onclick="navigateTo('announcements')" class="nav-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all">
+            <div class="flex items-center gap-3.5">
+              <i class="ph ph-megaphone text-xl"></i>
+              <span>Announcements</span>
+            </div>
+            <span id="sidebar-unread-badge" class="px-2 py-0.5 text-xs font-bold rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/70 dark:text-brand-300">2</span>
+          </button>
+          <button data-nav="profile" onclick="navigateTo('profile')" class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+            <i class="ph ph-user-circle text-xl"></i>
+            <span>Student Profile</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer: Student Quick Card & Theme Toggle -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleTheme()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors">
+          <span class="flex items-center gap-2.5">
+            <i id="theme-icon" class="ph-fill ph-moon text-base text-brand-600 dark:text-amber-400"></i>
+            <span id="theme-label">Dark Mode</span>
+          </span>
+          <span class="w-9 h-5 rounded-full bg-slate-300 dark:bg-brand-600 p-0.5 flex items-center transition-colors">
+            <span class="w-4 h-4 rounded-full bg-white shadow-xs transform dark:translate-x-4 transition-transform"></span>
+          </span>
+        </button>
+
+        <!-- Mini Student Info -->
+        <div onclick="navigateTo('profile')" class="cursor-pointer p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-transparent hover:border-slate-200/70 dark:hover:border-slate-700/70 transition-all flex items-center gap-3">
+          <div id="sidebar-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-600 to-violet-600 text-white font-display font-bold text-sm flex items-center justify-center shrink-0">
+            MR
+          </div>
+          <div class="min-w-0 flex-1">
+            <p id="sidebar-student-name" class="text-sm font-semibold text-slate-900 dark:text-white truncate">Miguel Reyes</p>
+            <p id="sidebar-student-id" class="text-xs text-slate-500 dark:text-slate-400 truncate">2024-01842 • BSIT-3A</p>
+          </div>
+          <i class="ph ph-caret-right text-slate-400"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Top Mobile / Desktop Utility Header -->
+      <header class="sticky top-0 z-20 h-16 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar(true)" class="lg:hidden p-2.5 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Open Navigation">
+            <i class="ph-bold ph-list text-xl"></i>
+          </button>
+          <div>
+            <h1 id="page-title" class="font-display font-bold text-lg sm:text-xl text-slate-900 dark:text-white">Dashboard</h1>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-4">
+          <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800/80 px-3.5 py-2 rounded-xl">
+            <i class="ph ph-calendar text-brand-600 dark:text-brand-400 text-base"></i>
+            <span id="header-current-date">Wednesday, Nov 25, 2026</span>
+          </div>
+          <button onclick="navigateTo('announcements')" class="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Announcements">
+            <i class="ph ph-bell text-xl"></i>
+            <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Module Container -->
+      <main id="app-content" class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <!-- Rendered dynamically by JavaScript -->
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== ANNOUNCEMENT MODAL ==================== -->
+  <div id="announcement-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden view-transition">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span id="modal-category" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300">Academic</span>
+          <span id="modal-date" class="text-xs text-slate-500 dark:text-slate-400">Nov 24, 2026</span>
+        </div>
+        <button onclick="closeAnnouncementModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4">
+        <h2 id="modal-title" class="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white leading-snug"></h2>
+        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pb-2 border-b border-slate-100 dark:border-slate-800">
+          <i class="ph-fill ph-buildings text-brand-500"></i>
+          <span id="modal-author">Office of the University Registrar</span>
+        </div>
+        <div id="modal-body" class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed space-y-3"></div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <button onclick="closeAnnouncementModal()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors">
+          Close Notice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APPLICATION LOGIC ==================== -->
+  <script>
+    // -------------------------------------------------------------------------
+    // 1. DEFAULT DATA & STATE MANAGEMENT (Zero-Backend, localStorage Ready)
+    // -------------------------------------------------------------------------
+    const STORAGE_KEYS = {
+      THEME: 'nexused_theme_v1',
+      TASKS: 'nexused_tasks_v1',
+      PROFILE: 'nexused_profile_v1',
+      READ_ANNOUNCEMENTS: 'nexused_read_ann_v1'
+    };
+
+    const DEFAULT_PROFILE = {
+      studentId: '2024-01842',
+      fullName: 'Miguel Alejandro Reyes',
+      program: 'BS Information Technology',
+      yearLevel: '3rd Year — Block A',
+      academicAdvisor: 'Prof. Elena M. Santos, MIT',
+      email: 'm.reyes2024@nexused.edu.ph',
+      phone: '+63 917 482 9104',
+      emergencyContactName: 'Clarissa D. Reyes (Mother)',
+      emergencyContactPhone: '+63 918 773 2049',
+      academicStanding: "Dean's Lister • Good Standing",
+      avatarUrl: ''
+    };
+
+    const DEFAULT_TASKS = [
+      { id: 't1', title: 'Submit CS 101 Linked List Lab Report', course: 'CS 101', due: 'Today, 5:00 PM', completed: false },
+      { id: 't2', title: 'Review ERD Normalization Slides for Quiz', course: 'IT 102', due: 'Tomorrow', completed: false },
+      { id: 't3', title: 'Complete Discrete Math Problem Set #4', course: 'MATH 101', due: 'Nov 28', completed: true },
+      { id: 't4', title: 'Prepare Ethics Case Study Group Outline', course: 'GE 104', due: 'Nov 30', completed: false }
+    ];
+
+    const SCHEDULE_DATA = [
+      // Monday
+      { day: 'Monday', code: 'CS 101', title: 'Data Structures & Algorithms', start: '08:00 AM', end: '09:30 AM', room: 'CCS Rm 302', instructor: 'Dr. Rafael Mendoza', modality: 'Lecture' },
+      { day: 'Monday', code: 'MATH 101', title: 'Discrete Mathematics', start: '10:00 AM', end: '11:30 AM', room: 'Main Bldg 204', instructor: 'Prof. Victor Cruz', modality: 'Lecture' },
+      { day: 'Monday', code: 'GE 104', title: 'Ethics & Society in the Digital Age', start: '01:30 PM', end: '03:00 PM', room: 'Zoom Virtual Rm 4', instructor: 'Prof. Hannah Lim', modality: 'Online' },
+      // Tuesday
+      { day: 'Tuesday', code: 'IT 102', title: 'Database Management Systems', start: '09:00 AM', end: '11:00 AM', room: 'IT Lab 104', instructor: 'Prof. Elena Santos', modality: 'Lab' },
+      { day: 'Tuesday', code: 'PE 1', title: 'Movement Enhancement & Fitness', start: '02:00 PM', end: '04:00 PM', room: 'University Gym', instructor: 'Coach Marco Reyes', modality: 'Lecture' },
+      // Wednesday
+      { day: 'Wednesday', code: 'CS 101', title: 'Data Structures & Algorithms', start: '08:00 AM', end: '09:30 AM', room: 'CCS Rm 302', instructor: 'Dr. Rafael Mendoza', modality: 'Lecture' },
+      { day: 'Wednesday', code: 'MATH 101', title: 'Discrete Mathematics', start: '10:00 AM', end: '11:30 AM', room: 'Main Bldg 204', instructor: 'Prof. Victor Cruz', modality: 'Lecture' },
+      { day: 'Wednesday', code: 'IT 105', title: 'Web Systems & Technologies', start: '01:00 PM', end: '03:00 PM', room: 'IT Lab 201', instructor: 'Engr. Carlo Bautista', modality: 'Lab' },
+      // Thursday
+      { day: 'Thursday', code: 'IT 102', title: 'Database Management Systems', start: '09:00 AM', end: '10:30 AM', room: 'CCS Rm 305', instructor: 'Prof. Elena Santos', modality: 'Lecture' },
+      { day: 'Thursday', code: 'GE 104', title: 'Ethics & Society in the Digital Age', start: '01:30 PM', end: '03:00 PM', room: 'Zoom Virtual Rm 4', instructor: 'Prof. Hannah Lim', modality: 'Online' },
+      // Friday
+      { day: 'Friday', code: 'CS 101', title: 'Data Structures & Algorithms (Lab)', start: '08:30 AM', end: '11:30 AM', room: 'IT Lab 102', instructor: 'Dr. Rafael Mendoza', modality: 'Lab' },
+      { day: 'Friday', code: 'IT 105', title: 'Web Systems & Technologies', start: '01:30 PM', end: '03:00 PM', room: 'Zoom Virtual Rm 2', instructor: 'Engr. Carlo Bautista', modality: 'Online' },
+      // Saturday
+      { day: 'Saturday', code: 'NSTP 1', title: 'Civic Welfare Training Service', start: '08:00 AM', end: '11:00 AM', room: 'Quadrangle / Hall B', instructor: 'Prof. David Navarro', modality: 'Lecture' }
+    ];
+
+    // Philippine/Standard 1.00 - 5.00 GWA Scale (1.00 is highest, 3.00 passing) + Equivalent Percentage
+    const GRADES_DATA = {
+      '1st Sem 2026-2027': [
+        { code: 'CS 101', title: 'Data Structures & Algorithms', units: 3, midterm: 1.25, final: 1.25, percent: 96, status: 'In Progress' },
+        { code: 'IT 102', title: 'Database Management Systems', units: 3, midterm: 1.50, final: 1.25, percent: 94, status: 'In Progress' },
+        { code: 'IT 105', title: 'Web Systems & Technologies', units: 3, midterm: 1.25, final: 1.00, percent: 98, status: 'In Progress' },
+        { code: 'MATH 101', title: 'Discrete Mathematics', units: 3, midterm: 1.75, final: 1.50, percent: 91, status: 'In Progress' },
+        { code: 'GE 104', title: 'Ethics & Society in the Digital Age', units: 3, midterm: 1.50, final: 1.50, percent: 92, status: 'In Progress' },
+        { code: 'PE 1', title: 'Movement Enhancement & Fitness', units: 2, midterm: 1.25, final: 1.25, percent: 95, status: 'In Progress' }
+      ],
+      '2nd Sem 2025-2026': [
+        { code: 'CS 100', title: 'Object-Oriented Programming', units: 3, midterm: 1.50, final: 1.25, percent: 95, status: 'Passed' },
+        { code: 'IT 101', title: 'Human-Computer Interaction', units: 3, midterm: 1.25, final: 1.25, percent: 96, status: 'Passed' },
+        { code: 'NET 101', title: 'Networking Fundamentals', units: 3, midterm: 1.75, final: 1.75, percent: 89, status: 'Passed' },
+        { code: 'MATH 100', title: 'Calculus for Computing', units: 3, midterm: 2.00, final: 1.75, percent: 88, status: 'Passed' },
+        { code: 'GE 102', title: 'Purposive Communication', units: 3, midterm: 1.50, final: 1.25, percent: 94, status: 'Passed' },
+        { code: 'PE 2', title: 'Rhythmic Activities', units: 2, midterm: 1.25, final: 1.25, percent: 96, status: 'Passed' }
+      ]
+    };
+
+    const ANNOUNCEMENTS_DATA = [
+      {
+        id: 'ann-1',
+        title: 'Final Examination Permit & Clearance Issuance Schedule',
+        category: 'Deadlines',
+        date: 'Nov 24, 2026',
+        author: 'Office of the University Registrar',
+        pinned: true,
+        summary: 'Students must settle account balances and complete library/laboratory clearances before December 4, 2026 to download examination permits.',
+        content: [
+          'All undergraduate students enrolled for the 1st Semester of Academic Year 2026–2027 are advised that Final Examination Permits will be released starting December 1, 2026.',
+          'Please ensure that all laboratory equipment borrowed from the College of Computer Studies (CCS) and books from the Main Library are returned on or before December 4, 2026 at 5:00 PM.',
+          'Once cleared, your digital permit will automatically reflect in your registrar record. Bring a printed or digital copy alongside your validated Student ID during exam week.'
+        ]
+      },
+      {
+        id: 'ann-2',
+        title: 'CCS Hackathon 2026: "Smart Campus Solutions" Registration Open',
+        category: 'IT Department',
+        date: 'Nov 22, 2026',
+        author: 'College of Computer Studies Student Council',
+        pinned: true,
+        summary: 'Form teams of 3–4 BSIT/BSCS students and build innovative campus apps for a chance to win ₱25,000 in prizes and tech internships.',
+        content: [
+          'The College of Computer Studies invites all BS Information Technology and BS Computer Science students to participate in the annual CCS Hackathon 2026.',
+          'Theme: "Smart Campus Solutions for Sustainable Education". Teams may build web applications, mobile prototypes, or IoT dashboards.',
+          'Registration closes on November 30, 2026. Pitching and demo day will be held at the Innovation Auditorium on December 11, 2026.'
+        ]
+      },
+      {
+        id: 'ann-3',
+        title: 'Pre-Enlistment for 2nd Semester AY 2026–2027 Opens Next Week',
+        category: 'Academic',
+        date: 'Nov 20, 2026',
+        author: 'Academic Affairs & Advising Office',
+        pinned: false,
+        summary: '3rd Year BSIT students are scheduled for online subject pre-enlistment on December 2, 2026 from 8:00 AM to 5:00 PM.',
+        content: [
+          'To streamline course sectioning for the upcoming semester, online pre-enlistment will follow a year-level priority schedule.',
+          '4th Year Students: December 1, 2026 | 3rd Year Students: December 2, 2026 | 2nd Year Students: December 3, 2026 | 1st Year Students: December 4, 2026.',
+          'Consult your Academic Advisor prior to pre-enlistment if you have irregular load requests or prerequisite concerns.'
+        ]
+      },
+      {
+        id: 'ann-4',
+        title: 'University Foundation Week & Cultural Night Lineup',
+        category: 'Events',
+        date: 'Nov 18, 2026',
+        author: 'Office of Student Affairs',
+        pinned: false,
+        summary: 'Join us for three days of sports tournaments, tech exhibits, food bazaars, and the Grand Cultural Night at the University Quadrangle.',
+        content: [
+          'Celebrate our institution’s 48th Foundation Anniversary from December 14 to December 16, 2026!',
+          'Highlights include Inter-College E-Sports (Valorant & Mobile Legends), Acoustic Night, Research Poster Exhibit, and the Lantern Parade.',
+          'Regular synchronous classes will be suspended during major plenary events. Attendance check-ins will be managed by department coordinators.'
+        ]
+      },
+      {
+        id: 'ann-5',
+        title: 'Extended Main Library & E-Journal Hub Operating Hours',
+        category: 'Academic',
+        date: 'Nov 15, 2026',
+        author: 'University Learning Resource Center',
+        pinned: false,
+        summary: 'Starting November 23 until Final Exams, the Main Library Study Commons will remain open until 9:00 PM on weekdays.',
+        content: [
+          'In support of student preparation for final projects and examinations, the Main Library Study Commons and Collaborative Pods will operate from 7:30 AM to 9:00 PM, Monday through Friday, and 8:00 AM to 5:00 PM on Saturdays.',
+          'High-speed Wi-Fi and IEEE Xplore / ACM Digital Library access remain available on all campus terminals.'
+        ]
+      }
+    ];
+
+    // App State
+    let state = {
+      activeView: 'dashboard',
+      scheduleDayFilter: 'All',
+      selectedSemester: '1st Sem 2026-2027',
+      gradeTermFilter: 'final', // 'midterm' or 'final'
+      announcementCategory: 'All',
+      announcementSearch: '',
+      profile: loadFromStorage(STORAGE_KEYS.PROFILE, DEFAULT_PROFILE),
+      tasks: loadFromStorage(STORAGE_KEYS.TASKS, DEFAULT_TASKS),
+      readAnnouncements: loadFromStorage(STORAGE_KEYS.READ_ANNOUNCEMENTS, [])
+    };
+
+    // -------------------------------------------------------------------------
+    // 2. UTILITY FUNCTIONS
+    // -------------------------------------------------------------------------
+    function loadFromStorage(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : structuredClone(fallback);
+      } catch (e) {
+        return structuredClone(fallback);
+      }
+    }
+
+    function saveToStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {
+        console.warn('Storage unavailable', e);
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = type === 'success'
+        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-800 dark:border-slate-200'
+        : 'bg-rose-600 text-white border-rose-500';
+      const icon = type === 'success' ? 'ph-check-circle text-emerald-400 dark:text-emerald-600' : 'ph-warning-circle';
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-sm font-medium transform translate-y-2 opacity-0 transition-all duration-300 ${colors}`;
+      toast.innerHTML = `<i class="ph-fill ${icon} text-lg"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .map(part => part[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+    }
+
+    function calculateGWA(courses, term = 'final') {
+      let totalWeighted = 0;
+      let totalUnits = 0;
+      courses.forEach(c => {
+        const grade = term === 'midterm' ? c.midterm : c.final;
+        totalWeighted += grade * c.units;
+        totalUnits += c.units;
+      });
+      return totalUnits ? (totalWeighted / totalUnits).toFixed(2) : '0.00';
+    }
+
+    function getTodayName() {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const today = days[new Date().getDay()];
+      return today === 'Sunday' ? 'Wednesday' : today; // Default to Wednesday if accessed on Sunday so user sees active classes
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. THEME & NAVIGATION
+    // -------------------------------------------------------------------------
+    function initTheme() {
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+      applyTheme(isDark);
+    }
+
+    function applyTheme(isDark) {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      const label = document.getElementById('theme-label');
+      if (isDark) {
+        html.classList.add('dark');
+        if (icon) icon.className = 'ph-fill ph-sun text-base text-amber-400';
+        if (label) label.textContent = 'Light Mode';
+      } else {
+        html.classList.remove('dark');
+        if (icon) icon.className = 'ph-fill ph-moon text-base text-brand-600';
+        if (label) label.textContent = 'Dark Mode';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = !document.documentElement.classList.contains('dark');
+      localStorage.setItem(STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
+      applyTheme(isDark);
+    }
+
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function updateSidebarMeta() {
+      const nameEl = document.getElementById('sidebar-student-name');
+      const idEl = document.getElementById('sidebar-student-id');
+      const avatarEl = document.getElementById('sidebar-avatar');
+      const badgeEl = document.getElementById('sidebar-unread-badge');
+
+      const shortName = state.profile.fullName.split(' ').slice(0, 2).join(' ');
+      nameEl.textContent = shortName;
+      idEl.textContent = `${state.profile.studentId} • BSIT`;
+      avatarEl.textContent = getInitials(state.profile.fullName);
+
+      const unreadCount = ANNOUNCEMENTS_DATA.filter(a => !state.readAnnouncements.includes(a.id)).length;
+      if (unreadCount > 0) {
+        badgeEl.textContent = unreadCount;
+        badgeEl.classList.remove('hidden');
+      } else {
+        badgeEl.classList.add('hidden');
+      }
+    }
+
+    function navigateTo(view) {
+      state.activeView = view;
+      toggleSidebar(false);
+
+      // Update active nav styling
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const isActive = btn.dataset.nav === view;
+        if (isActive) {
+          btn.className = 'nav-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold bg-brand-600 text-white shadow-sm shadow-brand-600/20 transition-all';
+        } else {
+          btn.className = 'nav-item w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition-all';
+        }
+      });
+
+      const titles = {
+        dashboard: 'Dashboard',
+        schedule: 'Class Schedule',
+        grades: 'Grades & Academic Performance',
+        announcements: 'Campus Announcements',
+        profile: 'Student Profile'
+      };
+      document.getElementById('page-title').textContent = titles[view] || 'Dashboard';
+
+      renderView();
+    }
+
+    function renderView() {
+      const container = document.getElementById('app-content');
+      container.innerHTML = '';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'view-transition space-y-6';
+
+      switch (state.activeView) {
+        case 'dashboard':
+          wrapper.innerHTML = renderDashboard();
+          break;
+        case 'schedule':
+          wrapper.innerHTML = renderSchedule();
+          break;
+        case 'grades':
+          wrapper.innerHTML = renderGrades();
+          break;
+        case 'announcements':
+          wrapper.innerHTML = renderAnnouncements();
+          break;
+        case 'profile':
+          wrapper.innerHTML = renderProfile();
+          break;
+      }
+
+      container.appendChild(wrapper);
+      updateSidebarMeta();
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. MODULE 1: DASHBOARD VIEW
+    // -------------------------------------------------------------------------
+    function renderDashboard() {
+      const currentCourses = GRADES_DATA['1st Sem 2026-2027'];
+      const currentGWA = calculateGWA(currentCourses, 'final');
+      const totalUnits = currentCourses.reduce((sum, c) => sum + c.units, 0);
+      const pendingTasks = state.tasks.filter(t => !t.completed).length;
+
+      const todayName = getTodayName();
+      const actualToday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      const todayClasses = SCHEDULE_DATA.filter(c => c.day === todayName);
+      const firstName = state.profile.fullName.split(' ')[0];
+
+      return `
+        <!-- Welcome Banner -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-700 via-indigo-700 to-slate-900 p-6 sm:p-8 text-white shadow-soft">
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-xs text-xs font-medium text-indigo-100 mb-3">
+                <i class="ph-fill ph-sparkle text-amber-300"></i>
+                <span>1st Semester • AY 2026–2027 • Week 14</span>
+              </div>
+              <h2 class="font-display font-bold text-2xl sm:text-3xl tracking-tight">Welcome back, ${firstName}!</h2>
+              <p class="text-indigo-100/90 text-sm sm:text-base mt-1 max-w-xl">
+                You have <strong class="text-white">${todayClasses.length} classes</strong> scheduled for ${actualToday === 'Sunday' ? 'Wednesday (Preview)' : 'today'} and <strong class="text-white">${pendingTasks} pending tasks</strong> on your checklist.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2.5 shrink-0">
+              <button onclick="navigateTo('schedule')" class="px-4 py-2.5 rounded-xl bg-white text-brand-700 hover:bg-indigo-50 text-sm font-semibold shadow-xs transition-colors flex items-center gap-2">
+                <i class="ph-bold ph-calendar-blank"></i>
+                <span>Full Timetable</span>
+              </button>
+              <button onclick="navigateTo('grades')" class="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-sm font-semibold backdrop-blur-xs transition-colors flex items-center gap-2">
+                <i class="ph-bold ph-chart-line-up"></i>
+                <span>Grade Report</span>
+              </button>
+            </div>
+          </div>
+          <!-- Decorative Circles -->
+          <div class="absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+          <div class="absolute right-28 -bottom-16 w-44 h-44 rounded-full bg-indigo-400/20 blur-xl pointer-events-none"></div>
+        </div>
+
+        <!-- 4 Summary Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+          <!-- Card 1: Current GWA -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-soft hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Current GWA</span>
+              <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/70 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+                <i class="ph-fill ph-medal text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2.5">
+              <span class="font-display font-extrabold text-3xl text-slate-900 dark:text-white">${currentGWA}</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-400">Dean's List</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">1.00 Scale • Top 5% of Block</p>
+          </div>
+
+          <!-- Card 2: Enrolled Units -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-soft hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Enrolled Units</span>
+              <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                <i class="ph-fill ph-books text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2.5">
+              <span class="font-display font-extrabold text-3xl text-slate-900 dark:text-white">${totalUnits}</span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Units (6 Courses)</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Regular Academic Load</p>
+          </div>
+
+          <!-- Card 3: Attendance Rate -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-soft hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Attendance Rate</span>
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <i class="ph-fill ph-check-square-offset text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2.5">
+              <span class="font-display font-extrabold text-3xl text-slate-900 dark:text-white">96.8%</span>
+              <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">+1.4% vs avg</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">61 of 63 sessions attended</p>
+          </div>
+
+          <!-- Card 4: Pending Tasks -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-soft hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Tasks</span>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <i class="ph-fill ph-list-checks text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2.5">
+              <span class="font-display font-extrabold text-3xl text-slate-900 dark:text-white">${pendingTasks}</span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">of ${state.tasks.length} items</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Synced locally in browser</p>
+          </div>
+        </div>
+
+        <!-- Main Dashboard Grid: Today's Classes + Recent Grades + Interactive To-Do -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left Column (7 cols): Today's Classes Timeline & Recent Grades -->
+          <div class="lg:col-span-7 space-y-6">
+            <!-- Today's Classes Timeline Widget -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-soft">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white">Today's Classes (${todayName})</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Chronological class timeline & room assignments</p>
+                </div>
+                <button onclick="navigateTo('schedule')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                  View Week →
+                </button>
+              </div>
+
+              <div class="relative pl-6 border-l-2 border-slate-200 dark:border-slate-800 space-y-5">
+                ${todayClasses.map((cls, idx) => {
+                  const badgeStyle = cls.modality === 'Lab'
+                    ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                    : cls.modality === 'Online'
+                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
+                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300';
+                  return `
+                    <div class="relative group">
+                      <span class="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full ${idx === 0 ? 'bg-brand-600 ring-4 ring-brand-100 dark:ring-brand-950' : 'bg-slate-300 dark:bg-slate-700'}"></span>
+                      <div class="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 group-hover:border-brand-200 dark:group-hover:border-brand-800 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400">${cls.code}</span>
+                            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md ${badgeStyle}">${cls.modality}</span>
+                            <span class="text-xs text-slate-400">• ${cls.start} – ${cls.end}</span>
+                          </div>
+                          <h4 class="font-semibold text-sm text-slate-900 dark:text-white mt-1">${cls.title}</h4>
+                          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-3">
+                            <span><i class="ph ph-map-pin mr-1"></i>${cls.room}</span>
+                            <span><i class="ph ph-chalkboard-teacher mr-1"></i>${cls.instructor}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Compact Recent Grades Widget -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-soft">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white">Recent Grade Updates</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Latest posted standing for 1st Sem 2026–2027</p>
+                </div>
+                <button onclick="navigateTo('grades')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                  All Grades →
+                </button>
+              </div>
+              <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                ${currentCourses.slice(0, 4).map(c => `
+                  <div class="py-3 flex items-center justify-between gap-4">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                        <span class="text-brand-600 dark:text-brand-400 mr-1.5">${c.code}</span>${c.title}
+                      </p>
+                      <p class="text-xs text-slate-500 dark:text-slate-400">${c.units} Units • Midterm: ${c.midterm.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0">
+                      <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/80 dark:text-brand-300">
+                        ${c.final.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column (5 cols): Interactive Quick Tasks / To-Do List -->
+          <div class="lg:col-span-5">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-soft flex flex-col h-full">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white">Quick Tasks & To-Do</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Auto-saved to your browser's localStorage</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  ${state.tasks.filter(t => t.completed).length}/${state.tasks.length} Done
+                </span>
+              </div>
+
+              <!-- Add Task Form -->
+              <form onsubmit="handleAddTask(event)" class="mb-4 space-y-2.5">
+                <div class="flex gap-2">
+                  <input
+                    id="new-task-input"
+                    type="text"
+                    required
+                    placeholder="Add assignment, lab, or reminder..."
+                    class="flex-1 px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                  />
+                  <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors shrink-0 flex items-center gap-1.5">
+                    <i class="ph-bold ph-plus"></i>
+                    <span class="hidden sm:inline">Add</span>
+                  </button>
+                </div>
+                <div class="flex gap-2">
+                  <select id="new-task-course" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:outline-none">
+                    <option value="CS 101">CS 101</option>
+                    <option value="IT 102">IT 102</option>
+                    <option value="IT 105">IT 105</option>
+                    <option value="MATH 101">MATH 101</option>
+                    <option value="GE 104">GE 104</option>
+                    <option value="General">General</option>
+                  </select>
+                  <input
+                    id="new-task-due"
+                    type="text"
+                    placeholder="Due date (e.g., Fri, 5 PM)"
+                    class="flex-1 px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:outline-none"
+                  />
+                </div>
+              </form>
+
+              <!-- Tasks List -->
+              <div class="flex-1 space-y-2.5 overflow-y-auto max-h-[420px] pr-1">
+                ${state.tasks.length === 0 ? `
+                  <div class="text-center py-10 text-slate-400">
+                    <i class="ph ph-check-circle text-4xl mb-2 block mx-auto text-emerald-500"></i>
+                    <p class="text-sm font-medium">All caught up! Add a task above.</p>
+                  </div>
+                ` : state.tasks.map(task => `
+                  <div class="group flex items-start justify-between gap-3 p-3.5 rounded-xl border ${task.completed ? 'bg-slate-50/60 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800/60' : 'bg-white dark:bg-slate-800/70 border-slate-200/80 dark:border-slate-700/80'} transition-all">
+                    <label class="flex items-start gap-3 cursor-pointer flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        ${task.completed ? 'checked' : ''}
+                        onchange="toggleTask('${task.id}')"
+                        class="mt-1 w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                      />
+                      <div class="min-w-0 flex-1">
+                        <p class="text-sm font-medium ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'} break-words">
+                          ${escapeHTML(task.title)}
+                        </p>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300">${escapeHTML(task.course)}</span>
+                          <span class="text-[11px] text-slate-400"><i class="ph ph-clock mr-0.5"></i>${escapeHTML(task.due || 'No due date')}</span>
+                        </div>
+                      </div>
+                    </label>
+                    <button onclick="deleteTask('${task.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 opacity-70 group-hover:opacity-100 transition-all" title="Delete Task">
+                      <i class="ph ph-trash text-base"></i>
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleAddTask(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-task-input');
+      const course = document.getElementById('new-task-course').value;
+      const due = document.getElementById('new-task-due').value.trim() || 'Upcoming';
+      const title = input.value.trim();
+      if (!title) return;
+
+      state.tasks.unshift({
+        id: 'task-' + Date.now(),
+        title,
+        course,
+        due,
+        completed: false
+      });
+      saveToStorage(STORAGE_KEYS.TASKS, state.tasks);
+      showToast('Task added to checklist');
+      renderView();
+    }
+
+    function toggleTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveToStorage(STORAGE_KEYS.TASKS, state.tasks);
+        renderView();
+      }
+    }
+
+    function deleteTask(id) {
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      saveToStorage(STORAGE_KEYS.TASKS, state.tasks);
+      showToast('Task removed');
+      renderView();
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. MODULE 2: CLASS SCHEDULE VIEW
+    // -------------------------------------------------------------------------
+    function renderSchedule() {
+      const days = ['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const filteredDays = state.scheduleDayFilter === 'All' ? weekDays : [state.scheduleDayFilter];
+
+      return `
+        <!-- Header & Day Filter Controls -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-soft flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-display font-bold text-xl text-slate-900 dark:text-white">Weekly Class Timetable</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">1st Semester AY 2026–2027 • BS Information Technology (Block 3A)</p>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+            ${days.map(day => {
+              const active = state.scheduleDayFilter === day;
+              return `
+                <button
+                  onclick="setScheduleFilter('${day}')"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    active
+                      ? 'bg-brand-600 text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700'
+                  }"
+                >
+                  ${day === 'All' ? 'Full Week (Mon–Sat)' : day}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Modality Legend -->
+        <div class="flex flex-wrap items-center gap-4 px-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Face-to-Face Lecture</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Computer / Hands-on Lab</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Synchronous Online</span>
+        </div>
+
+        <!-- Timetable Grid -->
+        <div class="grid grid-cols-1 ${state.scheduleDayFilter === 'All' ? 'md:grid-cols-2 xl:grid-cols-3' : 'max-w-3xl'} gap-5">
+          ${filteredDays.map(day => {
+            const classes = SCHEDULE_DATA.filter(c => c.day === day);
+            return `
+              <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-soft flex flex-col">
+                <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
+                  <span class="font-display font-bold text-sm text-slate-900 dark:text-white">${day}</span>
+                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700">
+                    ${classes.length} ${classes.length === 1 ? 'Class' : 'Classes'}
+                  </span>
+                </div>
+                <div class="p-4 space-y-3 flex-1">
+                  ${classes.map(cls => {
+                    const styles = cls.modality === 'Lab'
+                      ? { border: 'border-l-purple-500', badge: 'bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300' }
+                      : cls.modality === 'Online'
+                      ? { border: 'border-l-sky-500', badge: 'bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300' }
+                      : { border: 'border-l-emerald-500', badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300' };
+
+                    return `
+                      <div class="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 border-l-4 ${styles.border} hover:shadow-xs transition-all">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-xs font-extrabold tracking-wide text-brand-600 dark:text-brand-400">${cls.code}</span>
+                          <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold ${styles.badge}">${cls.modality}</span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-slate-900 dark:text-white mt-1">${cls.title}</h4>
+                        <div class="mt-2.5 pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                          <div class="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                            <i class="ph ph-clock text-brand-500"></i>
+                            <span>${cls.start} – ${cls.end}</span>
+                          </div>
+                          <div class="flex items-center gap-1.5">
+                            <i class="ph ph-map-pin text-slate-400"></i>
+                            <span>${cls.room}</span>
+                          </div>
+                          <div class="flex items-center gap-1.5">
+                            <i class="ph ph-user text-slate-400"></i>
+                            <span>${cls.instructor}</span>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function setScheduleFilter(day) {
+      state.scheduleDayFilter = day;
+      renderView();
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. MODULE 3: GRADES & GWA VIEW
+    // -------------------------------------------------------------------------
+    function renderGrades() {
+      const semesters = Object.keys(GRADES_DATA);
+      const courses = GRADES_DATA[state.selectedSemester] || [];
+      const midtermGWA = calculateGWA(courses, 'midterm');
+      const finalGWA = calculateGWA(courses, 'final');
+      const activeGWA = state.gradeTermFilter === 'midterm' ? midtermGWA : finalGWA;
+      const totalUnits = courses.reduce((acc, c) => acc + c.units, 0);
+
+      return `
+        <!-- Top Controls & GWA Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-soft flex flex-col justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 class="font-display font-bold text-xl text-slate-900 dark:text-white">Academic Grade Report</h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Official course standing and General Weighted Average (GWA)</p>
+              </div>
+
+              <!-- Semester Selector -->
+              <div class="flex items-center gap-2">
+                <select onchange="setSemester(this.value)" class="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  ${semesters.map(sem => `<option value="${sem}" ${sem === state.selectedSemester ? 'selected' : ''}>${sem}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+
+            <!-- Midterm vs Final Toggle -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+                <button onclick="setGradeTerm('midterm')" class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${state.gradeTermFilter === 'midterm' ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'}">
+                  Midterm Standing
+                </button>
+                <button onclick="setGradeTerm('final')" class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${state.gradeTermFilter === 'final' ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-xs' : 'text-slate-600 dark:text-slate-400'}">
+                  Final / Cumulative
+                </button>
+              </div>
+              <span class="text-xs text-slate-500 dark:text-slate-400">Grading Scale: <strong>1.00</strong> (Highest) – <strong>3.00</strong> (Passing)</span>
+            </div>
+          </div>
+
+          <!-- Calculated GWA Card -->
+          <div class="lg:col-span-4 bg-gradient-to-br from-brand-600 to-indigo-800 rounded-2xl p-6 text-white shadow-soft flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-indigo-200">${state.gradeTermFilter === 'midterm' ? 'Midterm GWA' : 'Cumulative GWA'}</span>
+              <span class="px-2.5 py-1 rounded-lg bg-white/15 text-xs font-semibold">${totalUnits} Total Units</span>
+            </div>
+            <div class="my-3">
+              <span class="font-display font-extrabold text-4xl sm:text-5xl tracking-tight">${activeGWA}</span>
+              <span class="ml-2 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-300/30">
+                ${parseFloat(activeGWA) <= 1.75 ? "Dean's Lister Qualified" : 'Good Standing'}
+              </span>
+            </div>
+            <p class="text-xs text-indigo-100/80">Computed automatically via unit-weighted average.</p>
+          </div>
+        </div>
+
+        <!-- Interactive Grades Table -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-soft overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200/80 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th class="py-3.5 px-5">Course Code</th>
+                  <th class="py-3.5 px-5">Course Title</th>
+                  <th class="py-3.5 px-4 text-center">Units</th>
+                  <th class="py-3.5 px-4 text-center">Midterm</th>
+                  <th class="py-3.5 px-4 text-center">Final</th>
+                  <th class="py-3.5 px-4 text-center">Equiv. %</th>
+                  <th class="py-3.5 px-5 text-right">Remarks</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                ${courses.map(c => {
+                  const isPassed = c.status === 'Passed';
+                  return `
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                      <td class="py-4 px-5 font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">${c.code}</td>
+                      <td class="py-4 px-5 font-medium text-slate-900 dark:text-white">${c.title}</td>
+                      <td class="py-4 px-4 text-center text-slate-600 dark:text-slate-300">${c.units}</td>
+                      <td class="py-4 px-4 text-center font-semibold ${state.gradeTermFilter === 'midterm' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-300'}">${c.midterm.toFixed(2)}</td>
+                      <td class="py-4 px-4 text-center font-bold ${state.gradeTermFilter === 'final' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-300'}">${c.final.toFixed(2)}</td>
+                      <td class="py-4 px-4 text-center text-slate-500 dark:text-slate-400">${c.percent}%</td>
+                      <td class="py-4 px-5 text-right whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          isPassed
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-400'
+                            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-400'
+                        }">
+                          <span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                          ${c.status}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Visual Grade Distribution Bar Chart -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-soft">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white">Course Percentage Performance Distribution</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Visual comparison across enrolled courses (${state.selectedSemester})</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${courses.map(c => {
+              const barColor = c.percent >= 95 ? 'bg-emerald-500' : c.percent >= 90 ? 'bg-brand-600' : 'bg-sky-500';
+              return `
+                <div>
+                  <div class="flex justify-between text-xs font-semibold mb-1.5">
+                    <span class="text-slate-700 dark:text-slate-200">${c.code} — ${c.title}</span>
+                    <span class="text-slate-900 dark:text-white">${c.percent}% (${c.final.toFixed(2)})</span>
+                  </div>
+                  <div class="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <div class="h-full rounded-full ${barColor} transition-all duration-500" style="width: ${c.percent}%"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function setSemester(sem) {
+      state.selectedSemester = sem;
+      renderView();
+    }
+
+    function setGradeTerm(term) {
+      state.gradeTermFilter = term;
+      renderView();
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. MODULE 4: ANNOUNCEMENTS VIEW
+    // -------------------------------------------------------------------------
+    function renderAnnouncements() {
+      const categories = ['All', 'Academic', 'Events', 'IT Department', 'Deadlines'];
+      const query = state.announcementSearch.toLowerCase().trim();
+
+      const filtered = ANNOUNCEMENTS_DATA.filter(ann => {
+        const matchesCat = state.announcementCategory === 'All' || ann.category === state.announcementCategory;
+        const matchesSearch = !query ||
+          ann.title.toLowerCase().includes(query) ||
+          ann.summary.toLowerCase().includes(query) ||
+          ann.author.toLowerCase().includes(query);
+        return matchesCat && matchesSearch;
+      });
+
+      // Sort pinned items first
+      filtered.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+      return `
+        <!-- Search & Category Filter Bar -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-soft space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 class="font-display font-bold text-xl text-slate-900 dark:text-white">Campus & Department News</h2>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Official advisories, IT department updates, and academic deadlines</p>
+            </div>
+            <!-- Search Input -->
+            <div class="relative w-full md:w-72">
+              <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+              <input
+                type="text"
+                value="${escapeHTML(state.announcementSearch)}"
+                oninput="handleAnnouncementSearch(this.value)"
+                placeholder="Search notices..."
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+          </div>
+
+          <!-- Category Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1">
+            ${categories.map(cat => {
+              const active = state.announcementCategory === cat;
+              return `
+                <button
+                  onclick="setAnnouncementCategory('${cat}')"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    active
+                      ? 'bg-brand-600 text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700'
+                  }"
+                >
+                  ${cat}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Announcements Feed -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          ${filtered.length === 0 ? `
+            <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-12 text-center">
+              <i class="ph ph-newspaper text-4xl text-slate-300 dark:text-slate-600 mb-2"></i>
+              <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">No announcements matched your filter.</p>
+              <button onclick="resetAnnouncementFilters()" class="mt-3 px-4 py-2 rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-300 text-xs font-semibold">Reset Filters</button>
+            </div>
+          ` : filtered.map(ann => {
+            const isRead = state.readAnnouncements.includes(ann.id);
+            const catColors = {
+              'Deadlines': 'bg-rose-50 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300',
+              'IT Department': 'bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300',
+              'Events': 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300',
+              'Academic': 'bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300'
+            };
+            return `
+              <article onclick="openAnnouncementModal('${ann.id}')" class="cursor-pointer group bg-white dark:bg-slate-900 border ${ann.pinned ? 'border-brand-300/80 dark:border-brand-800/80' : 'border-slate-200/80 dark:border-slate-800'} rounded-2xl p-6 shadow-soft hover:shadow-md hover:border-brand-400 dark:hover:border-brand-600 transition-all flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      ${ann.pinned ? `
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                          <i class="ph-fill ph-push-pin"></i> Pinned
+                        </span>
+                      ` : ''}
+                      <span class="px-2.5 py-0.5 rounded-md text-[11px] font-semibold ${catColors[ann.category] || catColors['Academic']}">
+                        ${ann.category}
+                      </span>
+                    </div>
+                    <span class="text-xs text-slate-400">${ann.date}</span>
+                  </div>
+
+                  <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-snug">
+                    ${ann.title}
+                  </h3>
+                  <p class="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-3 leading-relaxed">
+                    ${ann.summary}
+                  </p>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <span class="text-slate-500 dark:text-slate-400 truncate max-w-[65%]">${ann.author}</span>
+                  <span class="font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1">
+                    ${isRead ? 'Read Again' : 'Read Notice'} <i class="ph-bold ph-arrow-right"></i>
+                  </span>
+                </div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function setAnnouncementCategory(cat) {
+      state.announcementCategory = cat;
+      renderView();
+    }
+
+    function handleAnnouncementSearch(val) {
+      state.announcementSearch = val;
+      renderView();
+    }
+
+    function resetAnnouncementFilters() {
+      state.announcementCategory = 'All';
+      state.announcementSearch = '';
+      renderView();
+    }
+
+    function openAnnouncementModal(id) {
+      const ann = ANNOUNCEMENTS_DATA.find(a => a.id === id);
+      if (!ann) return;
+
+      if (!state.readAnnouncements.includes(id)) {
+        state.readAnnouncements.push(id);
+        saveToStorage(STORAGE_KEYS.READ_ANNOUNCEMENTS, state.readAnnouncements);
+        updateSidebarMeta();
+      }
+
+      document.getElementById('modal-category').textContent = ann.category;
+      document.getElementById('modal-date').textContent = ann.date;
+      document.getElementById('modal-title').textContent = ann.title;
+      document.getElementById('modal-author').textContent = ann.author;
+      document.getElementById('modal-body').innerHTML = ann.content.map(p => `<p>${p}</p>`).join('');
+
+      const modal = document.getElementById('announcement-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAnnouncementModal() {
+      const modal = document.getElementById('announcement-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (state.activeView === 'announcements') {
+        renderView();
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. MODULE 5: STUDENT PROFILE VIEW
+    // -------------------------------------------------------------------------
+    function renderProfile() {
+      const p = state.profile;
+      const initials = getInitials(p.fullName);
+
+      return `
+        <div class="max-w-4xl mx-auto space-y-6">
+          <!-- Profile Header Card -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-soft">
+            <div class="h-32 bg-gradient-to-r from-brand-600 via-indigo-600 to-violet-700"></div>
+            <div class="px-6 pb-6">
+              <div class="relative flex flex-col sm:flex-row sm:items-end justify-between -mt-12 mb-4 gap-4">
+                <div class="flex items-end gap-4">
+                  <div class="w-24 h-24 rounded-2xl bg-slate-900 dark:bg-slate-800 border-4 border-white dark:border-slate-900 text-white font-display font-extrabold text-3xl flex items-center justify-center shadow-md">
+                    ${initials}
+                  </div>
+                  <div class="pb-1">
+                    <h2 class="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white">${escapeHTML(p.fullName)}</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">${escapeHTML(p.program)} • ${escapeHTML(p.yearLevel)}</p>
+                  </div>
+                </div>
+
+                <span class="self-start sm:self-end inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/70 text-xs font-bold">
+                  <i class="ph-fill ph-seal-check text-base"></i>
+                  ${escapeHTML(p.academicStanding)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editable Profile Form -->
+          <form onsubmit="handleSaveProfile(event)" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-soft space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Personal & Academic Information</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Changes are persisted locally in your browser storage</p>
+              </div>
+              <button type="button" onclick="handleResetProfile()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+                <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                <span>Reset to Default</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Student ID Number</label>
+                <input type="text" name="studentId" value="${escapeHTML(p.studentId)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Full Name</label>
+                <input type="text" name="fullName" value="${escapeHTML(p.fullName)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Degree Program</label>
+                <input type="text" name="program" value="${escapeHTML(p.program)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Year Level & Section</label>
+                <input type="text" name="yearLevel" value="${escapeHTML(p.yearLevel)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Academic Advisor</label>
+                <input type="text" name="academicAdvisor" value="${escapeHTML(p.academicAdvisor)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">University Email</label>
+                <input type="email" name="email" value="${escapeHTML(p.email)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Mobile Number</label>
+                <input type="text" name="phone" value="${escapeHTML(p.phone)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Academic Standing Badge</label>
+                <input type="text" name="academicStanding" value="${escapeHTML(p.academicStanding)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Emergency Contact Person</label>
+                <input type="text" name="emergencyContactName" value="${escapeHTML(p.emergencyContactName)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Emergency Contact Number</label>
+                <input type="text" name="emergencyContactPhone" value="${escapeHTML(p.emergencyContactPhone)}" required class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm shadow-brand-600/20 transition-all flex items-center gap-2">
+                <i class="ph-bold ph-floppy-disk"></i>
+                <span>Save Profile Changes</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    function handleSaveProfile(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      state.profile = {
+        ...state.profile,
+        studentId: formData.get('studentId').trim(),
+        fullName: formData.get('fullName').trim(),
+        program: formData.get('program').trim(),
+        yearLevel: formData.get('yearLevel').trim(),
+        academicAdvisor: formData.get('academicAdvisor').trim(),
+        email: formData.get('email').trim(),
+        phone: formData.get('phone').trim(),
+        academicStanding: formData.get('academicStanding').trim(),
+        emergencyContactName: formData.get('emergencyContactName').trim(),
+        emergencyContactPhone: formData.get('emergencyContactPhone').trim()
+      };
+      saveToStorage(STORAGE_KEYS.PROFILE, state.profile);
+      showToast('Student profile saved successfully');
+      renderView();
+    }
+
+    function handleResetProfile() {
+      state.profile = structuredClone(DEFAULT_PROFILE);
+      saveToStorage(STORAGE_KEYS.PROFILE, state.profile);
+      showToast('Profile restored to default values');
+      renderView();
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. INITIALIZATION ON LOAD
+    // -------------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+
+      // Set live formatted date in top bar
+      const dateEl = document.getElementById('header-current-date');
+      if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      // Close modal on Escape key
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAnnouncementModal();
+      });
+
+      navigateTo('dashboard');
+    });
+  </script>
+</body>
+</html>
